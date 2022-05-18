@@ -29,6 +29,7 @@ pub enum ComponentType {
     KeyBind(KeyBindComponent),
     Score(ScoreComponent),
     Selector(SelectorComponent),
+    Base(BaseComponent),
 }
 
 pub trait Component {
@@ -254,11 +255,30 @@ mod tests {
             serde_json::ser::to_string(&ComponentType::Text(component.clone())).unwrap(),
             "{\"text\":\"hello\",\"bold\":true,\"color\":\"aqua\"}"
         );
-        component.base.color = Some(Color::Hex(HexColor::try_from("ffffff".to_string()).unwrap()));
+        component.base.color = Some(Color::Hex(HexColor::try_from("#ffffff".to_string()).unwrap()));
         assert_eq!(
             serde_json::ser::to_string(&ComponentType::Text(component.clone())).unwrap(),
             "{\"text\":\"hello\",\"bold\":true,\"color\":\"#ffffff\"}"
         );
+    }
+
+    #[test]
+    pub fn component_de_test() {
+        let json_component: ComponentType = serde_json::de::from_str(
+            "{\"text\":\"hi\",\"color\":\"red\",\"bold\":true,\"extra\":[{\"text\":\"bye\",\"color\":\"white\",\"bold\":false}]}"
+        ).unwrap();
+        let mut component = TextComponent::new("hi".into());
+        component.base.bold = Some(true);
+        component.base.color = Some(DefaultColor::Red.into());
+        component.base.extra = vec![
+            {
+                let mut component = TextComponent::new("bye".into());
+                component.base.color = Some(DefaultColor::White.into());
+                component.base.bold = Some(false);
+                component.into()
+            }
+        ];
+        assert_eq!(json_component, component.into());
     }
 
 }

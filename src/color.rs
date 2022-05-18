@@ -55,13 +55,18 @@ impl TryFrom<String> for HexColor {
     type Error = HexColorError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
-        let value_hex_num = i32::from_str_radix(&*value, 16)
-            .map_err(|_| HexColorError::BadHex)?;
-        Ok(HexColor {
-            r: (value_hex_num >> 16 & 0xff) as u8,
-            g: (value_hex_num >> 8 & 0xff) as u8,
-            b: (value_hex_num & 0xff) as u8,
-        })
+        match value.len() == 7 {
+            true => {
+                let value_hex_num = i32::from_str_radix(&value[1..], 16)
+                    .map_err(|_| HexColorError::BadHex)?;
+                Ok(HexColor {
+                    r: (value_hex_num >> 16 & 0xff) as u8,
+                    g: (value_hex_num >> 8 & 0xff) as u8,
+                    b: (value_hex_num & 0xff) as u8,
+                })
+            },
+            false => Err(HexColorError::BadHex),
+        }
     }
 }
 
@@ -85,14 +90,21 @@ impl From<DefaultColor> for Color {
 
 #[cfg(test)]
 mod tests {
-    use crate::color::HexColor;
+    use super::*;
 
     #[test]
     fn success_hex_color_test() {
-        let hex_color = HexColor::try_from("0f0f0f".to_string()).unwrap();
+        let hex_color = HexColor::try_from("#0f0f0f".to_string()).unwrap();
         assert_eq!(hex_color.r, 15);
         assert_eq!(hex_color.g, 15);
         assert_eq!(hex_color.b, 15);
-        assert_eq!(hex_color.to_string(), "0f0f0f");
+        assert_eq!(hex_color.to_string(), "#0f0f0f");
     }
+
+    #[test]
+    fn success_color_test() {
+        let color: Color = serde_json::from_str("\"#0f0f0f\"").unwrap();
+        assert_eq!(color, Color::Hex(HexColor::try_from("#0f0f0f".to_string()).unwrap()))
+    }
+
 }
