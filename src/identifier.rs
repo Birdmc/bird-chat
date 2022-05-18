@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 use serde::{Serialize, Deserialize};
-use crate::identifier::Error::{NoAnyDoubleDots, TooManyDoubleDots};
+use crate::identifier::IdentifierError::{NoAnyDoubleDots, TooManyDoubleDots};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(try_from = "String", into = "String")]
@@ -11,13 +11,13 @@ pub struct Identifier {
 }
 
 #[derive(Debug, PartialEq)]
-pub enum Error {
+pub enum IdentifierError {
     TooManyDoubleDots,
     NoAnyDoubleDots,
 }
 
 impl Identifier {
-    pub fn from_parts(domain: String, key: String) -> Result<Identifier, Error> {
+    pub fn from_parts(domain: String, key: String) -> Result<Identifier, IdentifierError> {
         match domain.contains(':') || key.contains(':') {
             true => Err(TooManyDoubleDots),
             false => {
@@ -27,7 +27,7 @@ impl Identifier {
         }
     }
 
-    pub fn from_full(full: String) -> Result<Identifier, Error> {
+    pub fn from_full(full: String) -> Result<Identifier, IdentifierError> {
         match full.find(':') {
             Some(index) => match full.rfind(':') {
                 Some(rindex) => match index == rindex {
@@ -70,21 +70,31 @@ impl From<Identifier> for String {
 }
 
 impl TryFrom<String> for Identifier {
-    type Error = Error;
+    type Error = IdentifierError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Identifier::from_full(value)
     }
 }
 
-impl std::error::Error for Error {}
+impl std::error::Error for IdentifierError {}
 
-impl Display for Error {
+impl Display for IdentifierError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            Error::TooManyDoubleDots => write!(f, "Too many double dots"),
-            Error::NoAnyDoubleDots => write!(f, "No any double dots"),
+            IdentifierError::TooManyDoubleDots => write!(f, "Too many double dots"),
+            IdentifierError::NoAnyDoubleDots => write!(f, "No any double dots"),
         }
+    }
+}
+
+impl PartialEq for Identifier {
+    fn eq(&self, other: &Self) -> bool {
+        self.domain == other.domain && self.key == other.key
+    }
+
+    fn ne(&self, other: &Self) -> bool {
+        !self.eq(other)
     }
 }
 
@@ -103,11 +113,11 @@ mod tests {
     pub fn too_many_double_dots_from_parts_test() {
         assert_eq!(
             Identifier::from_parts("minecraft:".into(), "some".into()).unwrap_err(),
-            Error::TooManyDoubleDots
+            IdentifierError::TooManyDoubleDots
         );
         assert_eq!(
             Identifier::from_parts("minecraft".into(), "some:".into()).unwrap_err(),
-            Error::TooManyDoubleDots
+            IdentifierError::TooManyDoubleDots
         );
     }
 
@@ -122,7 +132,7 @@ mod tests {
     pub fn too_many_double_dots_from_full_test() {
         assert_eq!(
             Identifier::from_full("minecraft::grass_block".into()).unwrap_err(),
-            Error::TooManyDoubleDots
+            IdentifierError::TooManyDoubleDots
         );
     }
 
@@ -130,7 +140,7 @@ mod tests {
     pub fn no_any_double_dots_from_full_test() {
         assert_eq!(
             Identifier::from_full("minecraft_grass_block".into()).unwrap_err(),
-            Error::NoAnyDoubleDots
+            IdentifierError::NoAnyDoubleDots
         )
     }
 
