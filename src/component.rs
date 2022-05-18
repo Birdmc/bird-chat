@@ -1,4 +1,5 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+
 use crate::color::{Color, DefaultColor};
 use crate::identifier::Identifier;
 
@@ -120,7 +121,7 @@ macro_rules! component {
                 self.base.underlined = Some(false);
                 self.base.strikethrough = Some(false);
                 self.base.obfuscated = Some(false);
-                self.base.color = Some(Color::Default(DefaultColor::Reset));
+                self.base.color = Some(Color::Default(DefaultColor::White));
             }
         }
     };
@@ -216,6 +217,7 @@ impl From<SelectorComponent> for ComponentType {
 #[cfg(test)]
 mod tests {
     use crate::color::HexColor;
+
     use super::*;
 
     #[test]

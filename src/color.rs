@@ -5,7 +5,6 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "snake_case")]
 pub enum DefaultColor {
-    // colors
     Black,
     DarkBlue,
     DarkGreen,
@@ -22,13 +21,6 @@ pub enum DefaultColor {
     LightPurple,
     Yellow,
     White,
-    // styles
-    Obfuscated,
-    Bold,
-    Strikethrough,
-    Underline,
-    Italic,
-    Reset,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
