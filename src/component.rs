@@ -255,7 +255,7 @@ mod tests {
         component.base.color = Some(Color::Hex(HexColor::try_from("ffffff".to_string()).unwrap()));
         assert_eq!(
             serde_json::ser::to_string(&ComponentType::Text(component.clone())).unwrap(),
-            "{\"text\":\"hello\",\"bold\":true,\"color\":\"ffffff\"}"
+            "{\"text\":\"hello\",\"bold\":true,\"color\":\"#ffffff\"}"
         );
     }
 

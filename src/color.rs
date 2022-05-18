@@ -75,7 +75,7 @@ impl TryFrom<String> for HexColor {
 
 impl Display for HexColor {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:02x}{:02x}{:02x}", self.r, self.g, self.b)
+        write!(f, "#{:02x}{:02x}{:02x}", self.r, self.g, self.b)
     }
 }
 
