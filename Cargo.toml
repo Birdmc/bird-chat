@@ -1,5 +1,5 @@
 [package]
-name = "cubic-chat"
+name = "bird-chat"
 version = "0.1.0"
 edition = "2021"
 description = "Minecraft components on rust"

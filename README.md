@@ -1,8 +1,8 @@
-# cubic-chat
-Cubic-chat is implementation of minecraft chat components on rust with serde support.
+# bird-chat
+bird-chat is implementation of minecraft chat components on rust with serde support.
 
 # Installing
-https://crates.io/crates/cubic-chat
+https://crates.io/crates/bird-chat
 
 # Usage
 ```rs
