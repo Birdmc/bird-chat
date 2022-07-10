@@ -102,7 +102,7 @@ impl<'a> Identifier<'a> {
         match self.get_inner() {
             IdentifierInner::Fulled(fulled) => {
                 // Safety. guarantied by private constructors
-                let index = unsafe { fulled.find(":").unwrap_unchecked() };
+                let index = unsafe { fulled.find(':').unwrap_unchecked() };
                 (&fulled[0..index], &fulled[index + 1..fulled.len()])
             }
             IdentifierInner::Partial(key, value) => (&key, &value)
@@ -121,7 +121,7 @@ impl<'a> Identifier<'a> {
         match self.into_inner() {
             IdentifierInner::Fulled(fulled) => {
                 // Safety. guarantied by private constructors
-                let index = unsafe { fulled.find(":").unwrap_unchecked() };
+                let index = unsafe { fulled.find(':').unwrap_unchecked() };
                 (
                     Cow::Owned(fulled[0..index].to_owned()),
                     Cow::Owned(fulled[index + 1..fulled.len()].to_owned())

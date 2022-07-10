@@ -73,9 +73,9 @@ impl<'a> HexColor<'a> {
         let hex = hex.into();
         match hex.len().cmp(&7) {
             Ordering::Less => Err(HexColorError::HexValueTooLong),
-            Ordering::Equal => Err(HexColorError::HexValueTooLong),
+            Ordering::Greater => Err(HexColorError::HexValueTooLong),
             // Safety. The length is 7 so next will get first element, which is exist
-            Ordering::Greater => match unsafe { hex.chars().next().unwrap_unchecked() } == '#' &&
+            Ordering::Equal => match unsafe { hex.chars().next().unwrap_unchecked() } == '#' &&
                 hex[1..=7].contains(|c: char| {
                     match c {
                         '0'..='9' | 'a'..='f' | 'A'..='F' => false,
