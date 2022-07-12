@@ -101,7 +101,7 @@ impl<'a> Identifier<'a> {
     pub fn get_partial(&'a self) -> (&'a str, &'a str) {
         match self.get_inner() {
             IdentifierInner::Fulled(fulled) => {
-                // Safety. guarantied by private constructors
+                // Safety. guarantied by constructors
                 let index = unsafe { fulled.find(':').unwrap_unchecked() };
                 (&fulled[0..index], &fulled[index + 1..fulled.len()])
             }
@@ -120,7 +120,7 @@ impl<'a> Identifier<'a> {
     pub fn into_partial(self) -> (Cow<'a, str>, Cow<'a, str>) {
         match self.into_inner() {
             IdentifierInner::Fulled(fulled) => {
-                // Safety. guarantied by private constructors
+                // Safety. guarantied by constructors
                 let index = unsafe { fulled.find(':').unwrap_unchecked() };
                 (
                     Cow::Owned(fulled[0..index].to_owned()),
