@@ -4,7 +4,7 @@ use std::fmt::{Display, Formatter};
 
 type HexColorInner<'a> = either::Either<(u8, u8, u8), Cow<'a, str>>;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Style {
     Random,
     Bold,
@@ -14,11 +14,11 @@ pub enum Style {
     Reset
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(try_from = "String", into = "String")]
 pub struct HexColor<'a>(HexColorInner<'a>);
 
-#[derive(Debug, Clone, Copy, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum DefaultColor {
     Black,
@@ -39,7 +39,7 @@ pub enum DefaultColor {
     White,
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(untagged)]
 pub enum Color<'a> {
     Default(DefaultColor),
