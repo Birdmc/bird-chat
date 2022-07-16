@@ -5,13 +5,12 @@ use std::fmt::{Display, Formatter};
 type HexColorInner<'a> = either::Either<(u8, u8, u8), Cow<'a, str>>;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-pub enum Style {
+pub enum Decoration {
     Random,
     Bold,
     Strikethrough,
     Underlined,
     Italic,
-    Reset
 }
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
