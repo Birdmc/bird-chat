@@ -1,5 +1,5 @@
 use std::borrow::Cow;
-use crate::formatting::{Color, Decoration};
+use crate::formatting::{Color};
 use crate::identifier::Identifier;
 use serde::{Serialize, Deserialize};
 use uuid::Uuid;
@@ -37,79 +37,79 @@ pub enum Component<'a> {
 #[serde(rename_all = "camelCase")]
 pub struct BaseComponent<'a> {
     #[serde(skip_serializing_if = "Option::is_none")]
-    bold: Option<bool>,
+    pub bold: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    italic: Option<bool>,
+    pub italic: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    underlined: Option<bool>,
+    pub underlined: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    strikethrough: Option<bool>,
+    pub strikethrough: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    obfuscated: Option<bool>,
+    pub obfuscated: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    font: Option<Identifier<'a>>,
+    pub font: Option<Identifier<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    color: Option<Color<'a>>,
+    pub color: Option<Color<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    insertion: Option<Cow<'a, str>>,
+    pub insertion: Option<Cow<'a, str>>,
     #[serde(skip_serializing_if = "is_cow_empty")]
-    extra: Cow<'a, [Component<'a>]>,
+    pub extra: Cow<'a, [Component<'a>]>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    click_event: Option<ClickEvent<'a>>,
+    pub click_event: Option<ClickEvent<'a>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    hover_event: Option<HoverEvent<'a>>,
+    pub hover_event: Option<HoverEvent<'a>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TextComponent<'a> {
-    text: Cow<'a, str>,
+    pub text: Cow<'a, str>,
     #[serde(flatten)]
-    base: BaseComponent<'a>,
+    pub base: BaseComponent<'a>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TranslatableComponent<'a> {
-    translate: Cow<'a, str>,
+    pub translate: Cow<'a, str>,
     #[serde(skip_serializing_if = "is_cow_empty")]
-    with: Cow<'a, [Component<'a>]>,
+    pub with: Cow<'a, [Component<'a>]>,
     #[serde(flatten)]
-    base: BaseComponent<'a>,
+    pub base: BaseComponent<'a>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct KeyBindComponent<'a> {
     #[serde(rename = "keybind")]
-    key_bind: Cow<'a, str>,
+    pub key_bind: Cow<'a, str>,
     #[serde(flatten)]
-    base: BaseComponent<'a>,
+    pub base: BaseComponent<'a>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ScoreComponent<'a> {
-    score: Score<'a>,
+    pub score: Score<'a>,
     #[serde(flatten)]
-    base: BaseComponent<'a>,
+    pub base: BaseComponent<'a>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Score<'a> {
-    name: either::Either<Cow<'a, str>, Uuid>,
-    objective: Cow<'a, str>,
+    pub name: either::Either<Cow<'a, str>, Uuid>,
+    pub objective: Cow<'a, str>,
     #[serde(skip_serializing_if = "serde_json::Value::is_null")]
-    value: serde_json::Value,
+    pub value: serde_json::Value,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct SelectorComponent<'a> {
-    selector: Cow<'a, str>,
+    pub selector: Cow<'a, str>,
     #[serde(flatten)]
-    base: BaseComponent<'a>,
+    pub base: BaseComponent<'a>,
 }
 
 fn is_cow_empty<T: Clone>(value: &Cow<[T]>) -> bool {
@@ -119,92 +119,102 @@ fn is_cow_empty<T: Clone>(value: &Cow<[T]>) -> bool {
     }
 }
 
+fn make_owned<T: ToOwned + ?Sized>(cow: &mut Cow<T>) {
+    if let Cow::Borrowed(borrowed) = cow {
+        *cow = Cow::Owned(borrowed.to_owned())
+    }
+}
+
+fn add<T: ToOwned + Clone>(into: &mut Cow<[T]>, to_add: T) {
+    match into.is_empty() {
+        true => *into = Cow::Owned(vec![to_add]),
+        false => {
+            make_owned(into);
+            match into {
+                Cow::Owned(ref mut owned) => owned.push(to_add),
+                // Safety. guarantied by make_owned
+                _ => unsafe { std::hint::unreachable_unchecked() }
+            }
+        }
+    }
+}
+
+fn add_values<'a, T: ToOwned + Clone>(into: &mut Cow<'a, [T]>, to_add: Cow<'a, [T]>) {
+    match into.is_empty() {
+        true => *into = to_add,
+        false => {
+            make_owned(into);
+            match into {
+                Cow::Owned(ref mut owned) => {
+                    let mut to_add = to_add.into();
+                    make_owned(&mut to_add);
+                    match to_add {
+                        Cow::Owned(push) => for to_add in push {
+                            owned.push(to_add)
+                        },
+                        // Safety. guarantied by make_owned
+                        _ => unsafe { std::hint::unreachable_unchecked() }
+                    }
+                }
+                // Safety. guarantied by make_owned
+                _ => unsafe { std::hint::unreachable_unchecked() }
+            }
+        }
+    }
+}
+
 impl<'a> BaseComponent<'a> {
-
-    pub fn set_decoration(&mut self, decoration: Decoration, value: Option<bool>) {
-        match decoration {
-            Decoration::Random => self.obfuscated = value,
-            Decoration::Bold => self.bold = value,
-            Decoration::Strikethrough => self.strikethrough = value,
-            Decoration::Underlined => self.underlined = value,
-            Decoration::Italic => self.italic = value,
-        }
-    }
-
-    pub fn set_color(&mut self, color: Option<impl Into<Color<'a>>>) {
-        self.color = color.map(|color| color.into());
-    }
-
-    pub fn set_font(&mut self, font: Option<impl Into<Identifier<'a>>>) {
-        self.font = font.map(|font| font.into());
-    }
-
-    pub fn set_insertion(&mut self, insertion: Option<impl Into<Cow<'a, str>>>) {
-        self.insertion = insertion.map(|insertion| insertion.into())
-    }
-
-    pub fn set_click_event(&mut self, click_event: Option<impl Into<ClickEvent<'a>>>) {
-        self.click_event = click_event.map(|click_event| click_event.into());
-    }
-
-    pub fn set_hover_event(&mut self, hover_event: Option<impl Into<HoverEvent<'a>>>) {
-        self.hover_event = hover_event.map(|hover_event| hover_event.into());
-    }
-
-    pub fn replace_extra(&mut self, extra: impl Into<Cow<'a, [Component<'a>]>>) {
-        self.extra = extra.into();
-    }
-
     pub fn add_extra(&mut self, extra: impl Into<Component<'a>>) {
-        if let Cow::Borrowed(borrowed) = self.extra {
-            self.extra = Cow::Owned(borrowed.to_owned());
-        }
-        if let Cow::Owned(ref mut owned) = self.extra {
-            owned.push(extra.into());
-        }
+        add(&mut self.extra, extra.into())
     }
 
-    pub const fn get_bold(&self) -> Option<bool> {
-        self.bold
+    pub fn add_extras(&mut self, extras: impl Into<Cow<'a, [Component<'a>]>>) {
+        add_values(&mut self.extra, extras.into());
+    }
+}
+
+impl <'a> TranslatableComponent<'a> {
+    pub fn add_arg(&mut self, arg: impl Into<Component<'a>>) {
+        add(&mut self.with, arg.into())
     }
 
-    pub const fn get_italic(&self) -> Option<bool> {
-        self.italic
+    pub fn add_args(&mut self, args: impl Into<Cow<'a, [Component<'a>]>>) {
+        add_values(&mut self.with, args.into());
     }
+}
 
-    pub const fn get_underlined(&self) -> Option<bool> {
-        self.underlined
+impl<'a> From<TextComponent<'a>> for Component<'a> {
+    fn from(component: TextComponent<'a>) -> Self {
+        Self::Text(component)
     }
+}
 
-    pub const fn get_strikethrough(&self) -> Option<bool> {
-        self.strikethrough
+impl<'a> From<TranslatableComponent<'a>> for Component<'a> {
+    fn from(component: TranslatableComponent<'a>) -> Self {
+        Self::Translatable(component)
     }
+}
 
-    pub const fn get_obfuscated(&self) -> Option<bool> {
-        self.obfuscated
+impl<'a> From<ScoreComponent<'a>> for Component<'a> {
+    fn from(component: ScoreComponent<'a>) -> Self {
+        Self::Score(component)
     }
+}
 
-    pub const fn get_font(&self) -> &Option<Identifier<'a>> {
-        &self.font
+impl<'a> From<SelectorComponent<'a>> for Component<'a> {
+    fn from(component: SelectorComponent<'a>) -> Self {
+        Self::Selector(component)
     }
+}
 
-    pub const fn get_color(&self) -> &Option<Color<'a>> {
-        &self.color
+impl<'a> From<KeyBindComponent<'a>> for Component<'a> {
+    fn from(component: KeyBindComponent<'a>) -> Self {
+        Self::KeyBind(component)
     }
+}
 
-    pub const fn get_insertion(&self) -> &Option<Cow<'a, str>> {
-        &self.insertion
-    }
-
-    pub const fn get_extra(&self) -> &Cow<'a, [Component<'a>]> {
-        &self.extra
-    }
-
-    pub const fn get_click_event(&self) -> &Option<ClickEvent<'a>> {
-        &self.click_event
-    }
-
-    pub const fn get_hover_event(&self) -> &Option<HoverEvent<'a>> {
-        &self.hover_event
+impl<'a> From<BaseComponent<'a>> for Component<'a> {
+    fn from(component: BaseComponent<'a>) -> Self {
+        Self::Base(component)
     }
 }
