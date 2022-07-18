@@ -90,7 +90,7 @@ impl<'a> HexColor<'a> {
     pub fn get_rgb(&self) -> (u8, u8, u8) {
         match self.get() {
             HexColorInner::Left((r, g, b)) => (*r, *g, *b),
-            // Safety. Guarantied by private constructors
+            // Safety. Guarantied by constructors
             HexColorInner::Right(str) => unsafe {
                 (
                     u8::from_str_radix(&str[1..3], 16).unwrap_unchecked(),

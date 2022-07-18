@@ -233,4 +233,18 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn into() {
+        {
+            let identifier = Identifier::new_fulled("minecraft:grass_block").unwrap();
+            assert_eq!(identifier.get_fulled(), Cow::Borrowed("minecraft:grass_block"));
+            assert_eq!(identifier.get_partial(), ("minecraft", "grass_block"));
+        }
+        {
+            let identifier = Identifier::new_partial("minecraft", "grass_block").unwrap();
+            assert_eq!(identifier.get_fulled(), Cow::Owned::<str>("minecraft:grass_block".to_string()));
+            assert_eq!(identifier.get_partial(), ("minecraft", "grass_block"));
+        }
+    }
 }
