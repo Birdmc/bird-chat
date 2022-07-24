@@ -10,6 +10,7 @@ pub enum IdentifierInner<'a> {
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(try_from = "String", into = "String")]
+#[repr(transparent)]
 pub struct Identifier<'a>(IdentifierInner<'a>);
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, thiserror::Error)]
