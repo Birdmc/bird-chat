@@ -164,6 +164,22 @@ fn add_values<'a, T: ToOwned + Clone>(into: &mut Cow<'a, [T]>, to_add: Cow<'a, [
 }
 
 impl<'a> BaseComponent<'a> {
+    pub const fn empty() -> Self {
+        Self {
+            bold: None,
+            italic: None,
+            underlined: None,
+            strikethrough: None,
+            obfuscated: None,
+            font: None,
+            color: None,
+            insertion: None,
+            extra: Cow::Borrowed(&[]),
+            click_event: None,
+            hover_event: None,
+        }
+    }
+
     pub fn add_extra(&mut self, extra: impl Into<Component<'a>>) {
         add(&mut self.extra, extra.into())
     }
@@ -173,7 +189,7 @@ impl<'a> BaseComponent<'a> {
     }
 }
 
-impl <'a> TranslatableComponent<'a> {
+impl<'a> TranslatableComponent<'a> {
     pub fn add_arg(&mut self, arg: impl Into<Component<'a>>) {
         add(&mut self.with, arg.into())
     }
